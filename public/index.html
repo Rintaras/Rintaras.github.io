@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akima補間インタラクティブデモ</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans CJK JP', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 32px;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1640px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 15px;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .panel {
+            background: #ffffff;
+            padding: 28px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .panel h2 {
+            font-size: 17px;
+            margin-bottom: 24px;
+            color: #0f172a;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .data-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .data-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .data-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .data-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .data-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .data-item {
+            display: grid;
+            grid-template-columns: 50px 1fr 1fr 75px;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .data-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px 0 0 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .data-item:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .data-item:hover::before {
+            opacity: 1;
+        }
+
+        .data-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .data-item-value {
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+            background: #ffffff;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .data-item-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .data-item-input-label {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .data-item input {
+            padding: 10px 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #ffffff;
+            color: #0f172a;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
+            width: 100%;
+            font-weight: 500;
+        }
+
+        .data-item input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .data-item button {
+            padding: 10px 14px;
+            background: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-item button:hover {
+            background: #1e293b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+        }
+
+        .add-button {
+            padding: 16px 24px;
+            background: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .add-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .add-button:hover::after {
+            left: 100%;
+        }
+
+        .add-button:hover {
+            background: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
+        }
+
+        .add-button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
+        }
+
+        .add-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .setting-group {
+            margin-bottom: 28px;
+        }
+
+        .setting-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 13px;
+            letter-spacing: -0.2px;
+        }
+
+        .setting-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: #ffffff;
+            color: #0f172a;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-weight: 500;
+        }
+
+        .setting-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            color: #0f172a;
+            font-size: 14px;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .chart-container {
+            background: #ffffff;
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        #chart {
+            width: 100%;
+            height: 600px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 80px 40px;
+            font-size: 15px;
+            color: #64748b;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            font-weight: 500;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin: 10px 0;
+            border: 1px solid #fca5a5;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin: 10px 0;
+            border: 1px solid #93c5fd;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .data-list {
+                max-height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .container {
+                padding: 24px;
+                border-radius: 16px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .main-layout {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .sidebar {
+                max-height: none;
+                overflow-y: visible;
+            }
+
+            .panel {
+                padding: 20px;
+            }
+
+            .panel h2 {
+                font-size: 16px;
+                margin-bottom: 16px;
+            }
+
+            .data-list {
+                max-height: 300px;
+            }
+
+            .data-item {
+                grid-template-columns: 45px 1fr 1fr 65px;
+                gap: 8px;
+                padding: 12px;
+            }
+
+            .data-item input {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+
+            .data-item button {
+                padding: 8px 12px;
+                font-size: 10px;
+            }
+
+            .add-button {
+                padding: 14px 20px;
+                font-size: 13px;
+            }
+
+            .chart-container {
+                padding: 20px;
+            }
+
+            #chart {
+                height: 400px;
+            }
+
+            .setting-group {
+                margin-bottom: 20px;
+            }
+
+            .checkbox-group {
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .header {
+                margin-bottom: 24px;
+                padding-bottom: 16px;
+            }
+
+            .data-item {
+                grid-template-columns: 40px 1fr 1fr 60px;
+                gap: 6px;
+                padding: 10px;
+            }
+
+            .data-item-input-label {
+                font-size: 9px;
+            }
+
+            .data-item input {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+
+            .data-item-value {
+                font-size: 12px;
+                width: 32px;
+                height: 32px;
+            }
+
+            #chart {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Akima補間</h1>
+            <div class="subtitle">データポイントを編集してリアルタイムで補間曲線を確認</div>
+        </div>
+
+        <div id="loading" class="loading">Pyodideを読み込み中...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="info" class="info" style="display: none;"></div>
+
+        <div id="main-content" style="display: none;">
+            <div class="main-layout">
+                <div class="sidebar">
+                    <div class="panel">
+                        <h2>データポイント</h2>
+                        <div id="data-list" class="data-list"></div>
+                        <button class="add-button" onclick="addDataPoint()">
+                            <span>+ データポイントを追加</span>
+                        </button>
+                    </div>
+
+                    <div class="panel">
+                        <h2>設定</h2>
+                        <div class="setting-group">
+                            <label class="setting-label">補間点数</label>
+                            <input type="number" id="interp-points" value="100" min="10" max="500" class="setting-input"
+                                onchange="updateChart()">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">表示オプション</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="show-points" checked onchange="updateChart()">
+                                    <label for="show-points">データポイントを表示</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="show-grid" checked onchange="updateChart()">
+                                    <label for="show-grid">グリッドを表示</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">補間手法の比較</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="show-linear" onchange="updateChart()">
+                                    <label for="show-linear">リニア（Linear）</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="show-cubic" onchange="updateChart()">
+                                    <label for="show-cubic">Cubic スプライン（Cubic Spline）</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div id="chart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js" defer></script>
+</body>
+
+</html>
