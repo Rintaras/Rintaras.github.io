@@ -13,7 +13,7 @@ Akima補間アルゴリズムの実装とインタラクティブデモを提供
 ├── Homework/              # Python実装と可視化スクリプト
 │   ├── akima_interpolation.py  # Akima補間のコア実装
 │   └── visualize.py           # 補間手法の比較可視化
-├── public/                # インタラクティブWebデモ
+├── public/                # インタラクティブWebデモ（GitHub Pagesで公開）
 │   ├── index.html        # メインHTMLファイル
 │   ├── app.js            # JavaScript制御コード
 │   ├── akima_interpolation.py  # ブラウザ用Python実装
@@ -48,7 +48,9 @@ pip install numpy matplotlib scipy
 
 ### public（Webデモ）のセットアップ
 
-Webデモはブラウザで直接動作します。追加のインストールは不要です。
+WebデモはGitHub Pagesで公開されています。以下のURLからアクセスできます：
+
+**https://rintaras.github.io/**
 
 ローカルで確認する場合：
 
@@ -94,7 +96,7 @@ python visualize.py
 
 ### public（Webデモ）
 
-1. `public/index.html` をブラウザで開く
+1. **https://rintaras.github.io/** にアクセス
 2. データポイントを追加・編集・削除
 3. リアルタイムで補間曲線の変化を確認
 4. 補間点数や表示オプションを調整
@@ -213,5 +215,5 @@ y(t) = a0 + a1*t + a2*t² + a3*t³
 
 ## リポジトリ
 
-https://github.com/Rintaras/akima-spline-demo
-
+- **GitHub**: https://github.com/Rintaras/Rintaras.github.io
+- **GitHub Pages**: https://rintaras.github.io/
