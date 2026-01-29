@@ -226,6 +226,11 @@ if ${showCubic ? 'True' : 'False'}:
             });
         }
         
+        // モバイル判定
+        const isMobile = window.innerWidth <= 768;
+        const isSmallMobile = window.innerWidth <= 480;
+        
+        // モバイル向けのレイアウト設定
         const layout = {
             title: {
                 text: '',
@@ -234,49 +239,90 @@ if ${showCubic ? 'True' : 'False'}:
             xaxis: {
                 title: { 
                     text: 'x軸', 
-                    font: { size: 15, family: 'Inter, sans-serif', weight: 600 },
-                    standoff: 24
+                    font: { 
+                        size: isSmallMobile ? 12 : isMobile ? 13 : 15, 
+                        family: 'Inter, sans-serif', 
+                        weight: 600 
+                    },
+                    standoff: isMobile ? 12 : 24
                 },
                 showgrid: showGrid,
                 gridcolor: '#e2e8f0',
                 gridwidth: 1,
                 zeroline: false,
                 linecolor: '#0f172a',
-                linewidth: 2,
-                tickfont: { size: 12, color: '#64748b', family: 'Inter, sans-serif' },
+                linewidth: isMobile ? 1.5 : 2,
+                tickfont: { 
+                    size: isSmallMobile ? 10 : isMobile ? 11 : 12, 
+                    color: '#64748b', 
+                    family: 'Inter, sans-serif' 
+                },
                 titlefont: { color: '#475569' }
             },
             yaxis: {
                 title: { 
                     text: 'y軸', 
-                    font: { size: 15, family: 'Inter, sans-serif', weight: 600 },
-                    standoff: 24
+                    font: { 
+                        size: isSmallMobile ? 12 : isMobile ? 13 : 15, 
+                        family: 'Inter, sans-serif', 
+                        weight: 600 
+                    },
+                    standoff: isMobile ? 12 : 24
                 },
                 showgrid: showGrid,
                 gridcolor: '#e2e8f0',
                 gridwidth: 1,
                 zeroline: false,
                 linecolor: '#0f172a',
-                linewidth: 2,
-                tickfont: { size: 12, color: '#64748b', family: 'Inter, sans-serif' },
+                linewidth: isMobile ? 1.5 : 2,
+                tickfont: { 
+                    size: isSmallMobile ? 10 : isMobile ? 11 : 12, 
+                    color: '#64748b', 
+                    family: 'Inter, sans-serif' 
+                },
                 titlefont: { color: '#475569' }
             },
             legend: {
-                font: { size: 13, family: 'Inter, sans-serif', weight: 500 },
-                x: 0.02,
-                y: 0.98,
+                font: { 
+                    size: isSmallMobile ? 11 : isMobile ? 12 : 13, 
+                    family: 'Inter, sans-serif', 
+                    weight: 500 
+                },
+                x: isMobile ? 0.01 : 0.02,
+                y: isMobile ? 0.99 : 0.98,
                 bgcolor: 'rgba(255,255,255,0.98)',
                 bordercolor: '#e2e8f0',
                 borderwidth: 1,
-                borderradius: 8
+                borderradius: 8,
+                xanchor: 'left',
+                yanchor: 'top'
             },
             hovermode: 'closest',
-            margin: { l: 90, r: 50, t: 50, b: 90 },
+            margin: isSmallMobile 
+                ? { l: 50, r: 20, t: 30, b: 60 }
+                : isMobile 
+                    ? { l: 60, r: 30, t: 40, b: 70 }
+                    : { l: 90, r: 50, t: 50, b: 90 },
             plot_bgcolor: '#ffffff',
-            paper_bgcolor: '#ffffff'
+            paper_bgcolor: '#ffffff',
+            autosize: true
         };
         
-        Plotly.newPlot('chart', traces, layout, { responsive: true });
+        const config = {
+            responsive: true,
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'akima-spline',
+                height: isMobile ? 400 : 600,
+                width: isMobile ? window.innerWidth - 40 : 1200,
+                scale: 2
+            }
+        };
+        
+        Plotly.newPlot('chart', traces, layout, config);
         
         document.getElementById('error').style.display = 'none';
     } catch (error) {
@@ -307,6 +353,20 @@ function waitForPyodide() {
         }, 100);
     });
 }
+
+// ウィンドウリサイズ時の再描画処理
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        if (pyodide && dataPoints.length >= 2) {
+            const chart = document.getElementById('chart');
+            if (chart && chart.data) {
+                Plotly.Plots.resize(chart);
+            }
+        }
+    }, 250);
+});
 
 window.addEventListener('DOMContentLoaded', async () => {
     try {
