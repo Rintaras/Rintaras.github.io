@@ -14,21 +14,21 @@ async function initPyodide() {
         if (typeof loadPyodide === 'undefined') {
             throw new Error('Pyodideが読み込まれていません。ページを再読み込みしてください。');
         }
-        
+
         document.getElementById('loading').textContent = 'Pyodideを初期化中...';
         pyodide = await loadPyodide({ indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/" });
-        
+
         document.getElementById('loading').textContent = 'NumPyとSciPyを読み込み中...';
         await pyodide.loadPackage(['numpy', 'scipy']);
-        
+
         document.getElementById('loading').textContent = 'Akima補間コードを読み込み中...';
         const akimaCode = await fetch('akima_interpolation.py').then(r => r.text());
         const cleanCode = akimaCode.replace(/if __name__ == "__main__":[\s\S]*/, '');
         pyodide.runPython(cleanCode);
-        
+
         document.getElementById('loading').style.display = 'none';
         document.getElementById('main-content').style.display = 'block';
-        
+
         renderDataList();
         updateChart();
     } catch (error) {
@@ -42,7 +42,7 @@ async function initPyodide() {
 function renderDataList() {
     const list = document.getElementById('data-list');
     list.innerHTML = '';
-    
+
     dataPoints.forEach((point, index) => {
         const item = document.createElement('div');
         item.className = 'data-item';
@@ -101,23 +101,23 @@ function updateChart() {
     if (!pyodide || dataPoints.length < 2) {
         return;
     }
-    
+
     try {
         const xData = dataPoints.map(p => p.x);
         const yData = dataPoints.map(p => p.y);
-        
+
         const xMin = Math.min(...xData);
         const xMax = Math.max(...xData);
         const interpPoints = parseInt(document.getElementById('interp-points').value) || 100;
-        
+
         const xInterp = [];
         for (let i = 0; i <= interpPoints; i++) {
             xInterp.push(xMin + (xMax - xMin) * i / interpPoints);
         }
-        
+
         const showLinear = document.getElementById('show-linear').checked;
         const showCubic = document.getElementById('show-cubic').checked;
-        
+
         const interpCode = `
 import numpy as np
 import json
@@ -158,15 +158,15 @@ if ${showCubic ? 'True' : 'False'}:
     except Exception as e:
         result_dict['cubic'] = [None] * len(x_interp)
 `;
-        
+
         pyodide.runPython(interpCode);
         const result = JSON.parse(pyodide.runPython('json.dumps(result_dict)'));
-        
+
         const showPoints = document.getElementById('show-points').checked;
         const showGrid = document.getElementById('show-grid').checked;
-        
+
         const traces = [];
-        
+
         if (showPoints) {
             traces.push({
                 x: xData,
@@ -181,12 +181,12 @@ if ${showCubic ? 'True' : 'False'}:
                 type: 'scatter'
             });
         }
-        
+
         traces.push({
             x: result.x_interp,
             y: result.akima,
             mode: 'lines',
-            name: 'Akima',
+            name: '秋間スプライン (Akima Spline)',
             line: {
                 color: '#667eea',
                 width: 3,
@@ -195,13 +195,13 @@ if ${showCubic ? 'True' : 'False'}:
             },
             type: 'scatter'
         });
-        
+
         if (showLinear && result.linear.length > 0) {
             traces.push({
                 x: result.x_interp,
                 y: result.linear,
                 mode: 'lines',
-                name: 'リニア（Linear）',
+                name: '線形（Linear）',
                 line: {
                     color: '#f59e0b',
                     width: 2.5,
@@ -210,7 +210,7 @@ if ${showCubic ? 'True' : 'False'}:
                 type: 'scatter'
             });
         }
-        
+
         if (showCubic && result.cubic.length > 0) {
             traces.push({
                 x: result.x_interp,
@@ -225,11 +225,11 @@ if ${showCubic ? 'True' : 'False'}:
                 type: 'scatter'
             });
         }
-        
+
         // モバイル判定
         const isMobile = window.innerWidth <= 768;
         const isSmallMobile = window.innerWidth <= 480;
-        
+
         // モバイル向けのレイアウト設定
         const layout = {
             title: {
@@ -237,12 +237,12 @@ if ${showCubic ? 'True' : 'False'}:
                 font: { size: 0 }
             },
             xaxis: {
-                title: { 
-                    text: 'x軸', 
-                    font: { 
-                        size: isSmallMobile ? 12 : isMobile ? 13 : 15, 
-                        family: 'Inter, sans-serif', 
-                        weight: 600 
+                title: {
+                    text: 'x軸',
+                    font: {
+                        size: isSmallMobile ? 12 : isMobile ? 13 : 15,
+                        family: 'Inter, sans-serif',
+                        weight: 600
                     },
                     standoff: isMobile ? 12 : 24
                 },
@@ -252,20 +252,20 @@ if ${showCubic ? 'True' : 'False'}:
                 zeroline: false,
                 linecolor: '#0f172a',
                 linewidth: isMobile ? 1.5 : 2,
-                tickfont: { 
-                    size: isSmallMobile ? 10 : isMobile ? 11 : 12, 
-                    color: '#64748b', 
-                    family: 'Inter, sans-serif' 
+                tickfont: {
+                    size: isSmallMobile ? 10 : isMobile ? 11 : 12,
+                    color: '#64748b',
+                    family: 'Inter, sans-serif'
                 },
                 titlefont: { color: '#475569' }
             },
             yaxis: {
-                title: { 
-                    text: 'y軸', 
-                    font: { 
-                        size: isSmallMobile ? 12 : isMobile ? 13 : 15, 
-                        family: 'Inter, sans-serif', 
-                        weight: 600 
+                title: {
+                    text: 'y軸',
+                    font: {
+                        size: isSmallMobile ? 12 : isMobile ? 13 : 15,
+                        family: 'Inter, sans-serif',
+                        weight: 600
                     },
                     standoff: isMobile ? 12 : 24
                 },
@@ -275,18 +275,18 @@ if ${showCubic ? 'True' : 'False'}:
                 zeroline: false,
                 linecolor: '#0f172a',
                 linewidth: isMobile ? 1.5 : 2,
-                tickfont: { 
-                    size: isSmallMobile ? 10 : isMobile ? 11 : 12, 
-                    color: '#64748b', 
-                    family: 'Inter, sans-serif' 
+                tickfont: {
+                    size: isSmallMobile ? 10 : isMobile ? 11 : 12,
+                    color: '#64748b',
+                    family: 'Inter, sans-serif'
                 },
                 titlefont: { color: '#475569' }
             },
             legend: {
-                font: { 
-                    size: isSmallMobile ? 11 : isMobile ? 12 : 13, 
-                    family: 'Inter, sans-serif', 
-                    weight: 500 
+                font: {
+                    size: isSmallMobile ? 11 : isMobile ? 12 : 13,
+                    family: 'Inter, sans-serif',
+                    weight: 500
                 },
                 x: isMobile ? 0.01 : 0.02,
                 y: isMobile ? 0.99 : 0.98,
@@ -298,16 +298,16 @@ if ${showCubic ? 'True' : 'False'}:
                 yanchor: 'top'
             },
             hovermode: 'closest',
-            margin: isSmallMobile 
+            margin: isSmallMobile
                 ? { l: 50, r: 20, t: 30, b: 60 }
-                : isMobile 
+                : isMobile
                     ? { l: 60, r: 30, t: 40, b: 70 }
                     : { l: 90, r: 50, t: 50, b: 90 },
             plot_bgcolor: '#ffffff',
             paper_bgcolor: '#ffffff',
             autosize: true
         };
-        
+
         const config = {
             responsive: true,
             displayModeBar: true,
@@ -321,9 +321,9 @@ if ${showCubic ? 'True' : 'False'}:
                 scale: 2
             }
         };
-        
+
         Plotly.newPlot('chart', traces, layout, config);
-        
+
         document.getElementById('error').style.display = 'none';
     } catch (error) {
         document.getElementById('error').style.display = 'block';
@@ -337,10 +337,10 @@ function waitForPyodide() {
             resolve();
             return;
         }
-        
+
         let attempts = 0;
         const maxAttempts = 100;
-        
+
         const checkInterval = setInterval(() => {
             attempts++;
             if (typeof loadPyodide !== 'undefined') {
