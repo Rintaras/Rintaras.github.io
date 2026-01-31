@@ -354,6 +354,53 @@ function waitForPyodide() {
     });
 }
 
+// パネルの折りたたみ機能
+function togglePanel(panelId) {
+    const panel = document.getElementById(panelId);
+    const content = document.getElementById(panelId.replace('-panel', '-content'));
+    const toggle = document.getElementById(panelId.replace('-panel', '-toggle'));
+    const otherPanelId = panelId === 'data-points-panel' ? 'settings-panel' : 'data-points-panel';
+    const otherPanel = document.getElementById(otherPanelId);
+    const sidebar = panel.closest('.sidebar');
+
+    const isCollapsed = panel.classList.contains('collapsed');
+
+    if (isCollapsed) {
+        // 展開
+        panel.classList.remove('collapsed');
+        panel.classList.add('expanded');
+        content.classList.remove('collapsed');
+        toggle.classList.remove('collapsed');
+
+        // もう片方のパネルを通常サイズに戻す
+        if (otherPanel) {
+            otherPanel.classList.remove('expanded');
+            otherPanel.classList.add('expanded');
+        }
+
+        // サイドバーからhas-collapsedクラスを削除
+        if (sidebar) {
+            sidebar.classList.remove('has-collapsed');
+        }
+    } else {
+        // 折りたたみ
+        panel.classList.remove('expanded');
+        panel.classList.add('collapsed');
+        content.classList.add('collapsed');
+        toggle.classList.add('collapsed');
+
+        // もう片方のパネルを大きくする
+        if (otherPanel && !otherPanel.classList.contains('collapsed')) {
+            otherPanel.classList.add('expanded');
+        }
+
+        // サイドバーにhas-collapsedクラスを追加
+        if (sidebar) {
+            sidebar.classList.add('has-collapsed');
+        }
+    }
+}
+
 // ウィンドウリサイズ時の再描画処理
 let resizeTimeout;
 window.addEventListener('resize', () => {
