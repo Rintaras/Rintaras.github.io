@@ -3,6 +3,18 @@ from typing import Tuple
 
 
 def calculate_slopes(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """
+    隣接するデータ点間の傾き（m_i）を計算する。
+    
+    m_i = (y_{i+1} - y_i) / (x_{i+1} - x_i)
+    
+    Args:
+        x: x座標の配列
+        y: y座標の配列
+    
+    Returns:
+        隣接するデータ点間の傾きの配列（長さはn-1）
+    """
     with np.errstate(divide='ignore', invalid='ignore'):
         slopes = (y[1:] - y[:-1]) / (x[1:] - x[:-1])
         slopes = np.where(np.isfinite(slopes), slopes, 0.0)
@@ -10,6 +22,26 @@ def calculate_slopes(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 
 def calculate_spline_slopes(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """
+    Akimaスプラインの各データ点における傾き（s_i）を計算する。
+    
+    重み付き平均を使用して傾きを決定する：
+    s_i = (w1 * m_{i-1} + w2 * m_i) / (w1 + w2)
+    ここで、w1 = |m_{i+1} - m_i|, w2 = |m_{i-1} - m_{i-2}|
+    
+    端点の特別な処理：
+    - s_1 = m_1
+    - s_2 = (m_1 + m_2) / 2
+    - s_{n-1} = (m_{n-2} + m_{n-1}) / 2
+    - s_n = m_{n-1}
+    
+    Args:
+        x: x座標の配列
+        y: y座標の配列
+    
+    Returns:
+        各データ点におけるスプラインの傾きの配列（長さはn）
+    """
     n = len(x)
     if n < 2:
         raise ValueError("少なくとも2個のデータ点が必要です")
@@ -35,7 +67,6 @@ def calculate_spline_slopes(x: np.ndarray, y: np.ndarray) -> np.ndarray:
             s[i] = (m[i-1] + m[i]) / 2.0
         else:
             s[i] = (w1 * m[i-1] + w2 * m[i]) / denominator
-    
     if n > 2:
         s[n-2] = (m[n-3] + m[n-2]) / 2.0
     s[n-1] = m[n-2]
@@ -44,6 +75,31 @@ def calculate_spline_slopes(x: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 
 def calculate_cubic_coefficients(x: np.ndarray, y: np.ndarray, s: np.ndarray, i: int) -> Tuple[float, float, float, float]:
+    """
+    3次多項式 P_i(x) = a_i + b_i(x - x_i) + c_i(x - x_i)^2 + d_i(x - x_i)^3 の係数を計算する。
+    
+    係数は以下の条件を満たすように決定する：
+    - P(x_i) = y_i
+    - P(x_{i+1}) = y_{i+1}
+    - P'(x_i) = s_i
+    - P'(x_{i+1}) = s_{i+1}
+    
+    係数の計算式：
+    - a_i = y_i
+    - b_i = s_i
+    - c_i = (3 * m_i - 2 * s_i - s_{i+1}) / h
+    - d_i = (s_i + s_{i+1} - 2 * m_i) / h^2
+    ここで、h = x_{i+1} - x_i, m_i = (y_{i+1} - y_i) / h
+    
+    Args:
+        x: x座標の配列
+        y: y座標の配列
+        s: 各データ点におけるスプラインの傾きの配列
+        i: 補間する区間の開始インデックス
+    
+    Returns:
+        3次多項式の係数 (a_i, b_i, c_i, d_i) のタプル
+    """
     x_i = x[i]
     x_i1 = x[i+1]
     y_i = y[i]
@@ -65,6 +121,23 @@ def calculate_cubic_coefficients(x: np.ndarray, y: np.ndarray, s: np.ndarray, i:
 
 
 def akima_interpolate_4points(x_data: np.ndarray, y_data: np.ndarray, x_interp: float) -> float:
+    """
+    4個のデータ点を使用してAkima補間を行う。
+    
+    この関数は正確に4個のデータ点を必要とし、高速に補間を行う。
+    補間点がデータ範囲外の場合は線形外挿を行う。
+    
+    Args:
+        x_data: 4個のx座標の配列
+        y_data: 4個のy座標の配列
+        x_interp: 補間するx座標
+    
+    Returns:
+        補間されたy座標の値
+    
+    Raises:
+        ValueError: データ点が4個でない場合
+    """
     if len(x_data) != 4 or len(y_data) != 4:
         raise ValueError("この関数は4個のデータ点を必要とします")
     
@@ -98,6 +171,23 @@ _akima_4points_cache = {}
 
 
 def akima_interpolate_4points_with_cache(x_data: np.ndarray, y_data: np.ndarray, x_interp: float) -> float:
+    """
+    4個のデータ点を使用してAkima補間を行う（キャッシュ機能付き）。
+    
+    同じデータ点に対して複数回補間を行う場合に効率的である。
+    計算済みのスプライン傾きをキャッシュに保存し、再利用する。
+    
+    Args:
+        x_data: 4個のx座標の配列
+        y_data: 4個のy座標の配列
+        x_interp: 補間するx座標
+    
+    Returns:
+        補間されたy座標の値
+    
+    Raises:
+        ValueError: データ点が4個でない場合
+    """
     data_key = (tuple(x_data), tuple(y_data))
     
     if data_key not in _akima_4points_cache:
@@ -139,6 +229,23 @@ def akima_interpolate_4points_with_cache(x_data: np.ndarray, y_data: np.ndarray,
 
 
 def akima_interpolate_npoints(x_data: np.ndarray, y_data: np.ndarray, x_interp: float) -> float:
+    """
+    N個のデータ点を使用してAkima補間を行う。
+    
+    任意の数のデータ点（2個以上）に対してAkima補間を実行する。
+    データ点は自動的にソートされ、補間点がデータ範囲外の場合は線形外挿を行う。
+    
+    Args:
+        x_data: N個のx座標の配列
+        y_data: N個のy座標の配列
+        x_interp: 補間するx座標
+    
+    Returns:
+        補間されたy座標の値
+    
+    Raises:
+        ValueError: データ点が2個未満の場合、またはx_dataとy_dataの長さが一致しない場合
+    """
     if len(x_data) != len(y_data):
         raise ValueError("x_dataとy_dataの長さが一致しません")
     
