@@ -22,7 +22,17 @@ async function initPyodide() {
         await pyodide.loadPackage(['numpy', 'scipy']);
 
         document.getElementById('loading').textContent = 'Akima補間コードを読み込み中...';
-        const akimaCode = await fetch('akima_interpolation.py').then(r => r.text());
+        const response = await fetch('akima_interpolation.py');
+        if (!response.ok) {
+            throw new Error(`ファイルの読み込みに失敗しました: ${response.status} ${response.statusText}`);
+        }
+        const akimaCode = await response.text();
+
+        // HTMLが混入していないかチェック
+        if (akimaCode.trim().startsWith('<!DOCTYPE') || akimaCode.trim().startsWith('<!doctype')) {
+            throw new Error('akima_interpolation.pyファイルが見つかりません。HTMLが返されました。');
+        }
+
         const cleanCode = akimaCode.replace(/if __name__ == "__main__":[\s\S]*/, '');
         pyodide.runPython(cleanCode);
 
@@ -73,6 +83,15 @@ function addDataPoint() {
     updateChart();
 }
 
+function randomizeYValues() {
+    // 各データポイントのy軸をランダムな値（0から10の範囲）に設定
+    dataPoints.forEach(point => {
+        point.y = Math.random() * 10;
+    });
+    renderDataList();
+    updateChart();
+}
+
 function removeDataPoint(index) {
     if (dataPoints.length <= 2) {
         showInfo('少なくとも2つのデータポイントが必要です');
@@ -115,6 +134,7 @@ function updateChart() {
             xInterp.push(xMin + (xMax - xMin) * i / interpPoints);
         }
 
+        const showAkima = document.getElementById('show-akima').checked;
         const showLinear = document.getElementById('show-linear').checked;
         const showCubic = document.getElementById('show-cubic').checked;
 
@@ -182,19 +202,21 @@ if ${showCubic ? 'True' : 'False'}:
             });
         }
 
-        traces.push({
-            x: result.x_interp,
-            y: result.akima,
-            mode: 'lines',
-            name: '秋間スプライン (Akima Spline)',
-            line: {
-                color: '#667eea',
-                width: 3,
-                shape: 'spline',
-                smoothing: 1.3
-            },
-            type: 'scatter'
-        });
+        if (showAkima && result.akima.length > 0) {
+            traces.push({
+                x: result.x_interp,
+                y: result.akima,
+                mode: 'lines',
+                name: 'Akima スプライン (Akima Spline)',
+                line: {
+                    color: '#667eea',
+                    width: 3,
+                    shape: 'spline',
+                    smoothing: 1.3
+                },
+                type: 'scatter'
+            });
+        }
 
         if (showLinear && result.linear.length > 0) {
             traces.push({
@@ -366,22 +388,60 @@ function togglePanel(panelId) {
     const isCollapsed = panel.classList.contains('collapsed');
 
     if (isCollapsed) {
-        // 展開
+        // 展開する前に、もう片方のパネルの状態をチェック
+        const otherIsCollapsed = otherPanel && otherPanel.classList.contains('collapsed');
+
+        // トランジションを一時的に無効化して、一括でクラス変更を行う
+        if (sidebar) {
+            sidebar.style.transition = 'none';
+        }
+        if (panel) {
+            panel.style.transition = 'none';
+        }
+        if (otherPanel) {
+            otherPanel.style.transition = 'none';
+        }
+
+        // 両方のパネルが展開される場合は、先にhas-collapsedクラスを削除
+        if (!otherIsCollapsed && sidebar) {
+            sidebar.classList.remove('has-collapsed');
+        }
+
+        // パネルを展開
         panel.classList.remove('collapsed');
         panel.classList.add('expanded');
         content.classList.remove('collapsed');
         toggle.classList.remove('collapsed');
 
-        // もう片方のパネルを通常サイズに戻す
-        if (otherPanel) {
-            otherPanel.classList.remove('expanded');
-            otherPanel.classList.add('expanded');
+        if (otherIsCollapsed) {
+            // もう片方のパネルが折りたたまれている場合、このパネルを大きくする
+            // サイドバーにhas-collapsedクラスを追加（維持）
+            if (sidebar) {
+                sidebar.classList.add('has-collapsed');
+            }
+        } else {
+            // 両方のパネルが展開されている場合、通常サイズに戻す
+            // もう片方のパネルも通常サイズに設定
+            if (otherPanel) {
+                otherPanel.classList.remove('expanded');
+                otherPanel.classList.add('expanded');
+            }
         }
 
-        // サイドバーからhas-collapsedクラスを削除
-        if (sidebar) {
-            sidebar.classList.remove('has-collapsed');
-        }
+        // 次のフレームでトランジションを再有効化
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (sidebar) {
+                    sidebar.style.transition = '';
+                }
+                if (panel) {
+                    panel.style.transition = '';
+                }
+                if (otherPanel) {
+                    otherPanel.style.transition = '';
+                }
+            });
+        });
     } else {
         // 折りたたみ
         panel.classList.remove('expanded');
@@ -392,11 +452,15 @@ function togglePanel(panelId) {
         // もう片方のパネルを大きくする
         if (otherPanel && !otherPanel.classList.contains('collapsed')) {
             otherPanel.classList.add('expanded');
-        }
-
-        // サイドバーにhas-collapsedクラスを追加
-        if (sidebar) {
-            sidebar.classList.add('has-collapsed');
+            // サイドバーにhas-collapsedクラスを追加
+            if (sidebar) {
+                sidebar.classList.add('has-collapsed');
+            }
+        } else {
+            // 両方のパネルが折りたたまれている場合、has-collapsedクラスを削除
+            if (sidebar) {
+                sidebar.classList.remove('has-collapsed');
+            }
         }
     }
 }

@@ -61,7 +61,8 @@
             display: grid;
             grid-template-columns: 400px 1fr;
             gap: 40px;
-            align-items: start;
+            align-items: stretch;
+            min-height: 0;
         }
 
         .sidebar {
@@ -69,6 +70,8 @@
             flex-direction: column;
             gap: 20px;
             padding-right: 8px;
+            min-height: 0;
+            flex: 1 1 auto;
         }
 
         .panel.expanded {
@@ -81,6 +84,22 @@
 
         .sidebar.has-collapsed .panel.expanded {
             flex: 2 1 auto;
+            min-height: 0;
+            max-height: 100%;
+        }
+
+        .sidebar.has-collapsed .panel.expanded .panel-content {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .sidebar.has-collapsed .panel.expanded .data-list {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: none;
         }
 
         .sidebar::-webkit-scrollbar {
@@ -167,6 +186,8 @@
             transition: max-height 0.3s ease, opacity 0.3s ease, padding-top 0.3s ease, padding-bottom 0.3s ease;
             max-height: 2000px;
             opacity: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .panel-content.collapsed {
@@ -184,6 +205,11 @@
             max-height: 240px;
             overflow-y: auto;
             padding-right: 8px;
+            transition: max-height 0.3s ease;
+        }
+
+        .sidebar.has-collapsed .data-list {
+            max-height: 600px;
         }
 
         .data-list::-webkit-scrollbar {
@@ -358,6 +384,54 @@
         }
 
         .add-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .random-button {
+            padding: 12px 20px;
+            background: #475569;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 12px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(71, 85, 105, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .random-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .random-button:hover::after {
+            left: 100%;
+        }
+
+        .random-button:hover {
+            background: #334155;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(71, 85, 105, 0.25);
+        }
+
+        .random-button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(71, 85, 105, 0.2);
+        }
+
+        .random-button span {
             position: relative;
             z-index: 1;
         }
@@ -642,6 +716,9 @@
                             <button class="add-button" onclick="addDataPoint()">
                                 <span>+ データポイントを追加</span>
                             </button>
+                            <button class="random-button" onclick="randomizeYValues()">
+                                <span> Y軸をランダムに設定</span>
+                            </button>
                         </div>
                     </div>
 
@@ -672,6 +749,10 @@
                             <div class="setting-group">
                                 <label class="setting-label">補間手法の比較</label>
                                 <div class="checkbox-group">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="show-akima" checked onchange="updateChart()">
+                                        <label for="show-akima">Akima スプライン（Akima Spline）</label>
+                                    </div>
                                     <div class="checkbox-item">
                                         <input type="checkbox" id="show-linear" onchange="updateChart()">
                                         <label for="show-linear">リニア（Linear）</label>
