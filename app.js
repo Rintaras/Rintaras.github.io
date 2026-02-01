@@ -76,23 +76,24 @@ function renderDataList() {
     });
 }
 
-function addDataPoint() {
+window.addDataPoint = function () {
     const maxX = dataPoints.length > 0 ? Math.max(...dataPoints.map(p => p.x)) : 0;
     dataPoints.push({ x: maxX + 1, y: 0 });
     renderDataList();
     updateChart();
-}
+};
 
-function randomizeYValues() {
+// グローバルスコープで関数を定義
+window.randomizeYValues = function () {
     // 各データポイントのy軸をランダムな値（0から10の範囲）に設定
     dataPoints.forEach(point => {
         point.y = Math.random() * 10;
     });
     renderDataList();
     updateChart();
-}
+};
 
-function removeDataPoint(index) {
+window.removeDataPoint = function (index) {
     if (dataPoints.length <= 2) {
         showInfo('少なくとも2つのデータポイントが必要です');
         return;
@@ -100,12 +101,12 @@ function removeDataPoint(index) {
     dataPoints.splice(index, 1);
     renderDataList();
     updateChart();
-}
+};
 
-function updateDataPoint(index, field, value) {
+window.updateDataPoint = function (index, field, value) {
     dataPoints[index][field] = parseFloat(value) || 0;
     updateChart();
-}
+};
 
 function showInfo(message) {
     const info = document.getElementById('info');
