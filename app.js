@@ -270,17 +270,17 @@ if ${showCubic ? 'True' : 'False'}:
                     standoff: isMobile ? 12 : 24
                 },
                 showgrid: showGrid,
-                gridcolor: '#e2e8f0',
+                gridcolor: 'rgba(255, 255, 255, 0.1)',
                 gridwidth: 1,
                 zeroline: false,
-                linecolor: '#0f172a',
+                linecolor: '#f8fafc',
                 linewidth: isMobile ? 1.5 : 2,
                 tickfont: {
                     size: isSmallMobile ? 10 : isMobile ? 11 : 12,
-                    color: '#64748b',
+                    color: '#cbd5e1',
                     family: 'Inter, sans-serif'
                 },
-                titlefont: { color: '#475569' }
+                titlefont: { color: '#e2e8f0' }
             },
             yaxis: {
                 title: {
@@ -293,28 +293,29 @@ if ${showCubic ? 'True' : 'False'}:
                     standoff: isMobile ? 12 : 24
                 },
                 showgrid: showGrid,
-                gridcolor: '#e2e8f0',
+                gridcolor: 'rgba(255, 255, 255, 0.1)',
                 gridwidth: 1,
                 zeroline: false,
-                linecolor: '#0f172a',
+                linecolor: '#f8fafc',
                 linewidth: isMobile ? 1.5 : 2,
                 tickfont: {
                     size: isSmallMobile ? 10 : isMobile ? 11 : 12,
-                    color: '#64748b',
+                    color: '#cbd5e1',
                     family: 'Inter, sans-serif'
                 },
-                titlefont: { color: '#475569' }
+                titlefont: { color: '#e2e8f0' }
             },
             legend: {
                 font: {
                     size: isSmallMobile ? 11 : isMobile ? 12 : 13,
                     family: 'Inter, sans-serif',
-                    weight: 500
+                    weight: 500,
+                    color: '#f8fafc'
                 },
                 x: isMobile ? 0.01 : 0.02,
                 y: isMobile ? 0.99 : 0.98,
-                bgcolor: 'rgba(255,255,255,0.98)',
-                bordercolor: '#e2e8f0',
+                bgcolor: 'rgba(51, 65, 85, 0.95)',
+                bordercolor: 'rgba(255, 255, 255, 0.2)',
                 borderwidth: 1,
                 borderradius: 8,
                 xanchor: 'left',
@@ -326,8 +327,8 @@ if ${showCubic ? 'True' : 'False'}:
                 : isMobile
                     ? { l: 60, r: 30, t: 40, b: 70 }
                     : { l: 90, r: 50, t: 50, b: 90 },
-            plot_bgcolor: '#ffffff',
-            paper_bgcolor: '#ffffff',
+            plot_bgcolor: '#334155',
+            paper_bgcolor: '#334155',
             autosize: true
         };
 

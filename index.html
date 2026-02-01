@@ -7,6 +7,7 @@
     <title>Akim Spline Interpolation</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,39 +20,54 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans CJK JP', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: #0f172a;
             min-height: 100vh;
             padding: 32px;
-            color: #0f172a;
+            color: #f8fafc;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
 
         .container {
             max-width: 1640px;
             margin: 0 auto;
-            background: #ffffff;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
             border-radius: 24px;
             padding: 48px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
         }
 
         .header {
             margin-bottom: 40px;
             padding-bottom: 24px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         h1 {
             font-size: 36px;
             margin-bottom: 8px;
-            color: #0f172a;
+            color: #f8fafc;
             font-weight: 700;
             letter-spacing: -1px;
         }
 
         .subtitle {
-            color: #64748b;
+            color: #cbd5e1;
             font-size: 15px;
             font-weight: 400;
             line-height: 1.6;
@@ -120,10 +136,10 @@
         }
 
         .panel {
-            background: #ffffff;
+            background: #334155;
             border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             flex-shrink: 0;
             overflow: hidden;
             transition: flex 0.3s ease;
@@ -146,13 +162,13 @@
         }
 
         .panel-header:hover {
-            background-color: #f8fafc;
+            background-color: rgba(255, 255, 255, 0.05);
         }
 
         .panel h2 {
             font-size: 16px;
             margin: 0;
-            color: #0f172a;
+            color: #f8fafc;
             font-weight: 600;
             letter-spacing: -0.3px;
         }
@@ -164,16 +180,16 @@
             align-items: center;
             justify-content: center;
             border-radius: 6px;
-            background: #f1f5f9;
-            color: #64748b;
+            background: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
             font-size: 14px;
             transition: all 0.2s;
             flex-shrink: 0;
         }
 
         .panel-toggle:hover {
-            background: #e2e8f0;
-            color: #0f172a;
+            background: rgba(255, 255, 255, 0.2);
+            color: #f8fafc;
         }
 
         .panel-toggle.collapsed {
@@ -235,9 +251,9 @@
             grid-template-columns: 45px 1fr 1fr 70px;
             gap: 10px;
             padding: 12px;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
             border-radius: 10px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             align-items: center;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
@@ -257,8 +273,8 @@
         }
 
         .data-item:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
             transform: translateY(-1px);
         }
 
@@ -274,16 +290,16 @@
 
         .data-item-value {
             font-weight: 600;
-            color: #475569;
+            color: #cbd5e1;
             font-size: 14px;
-            background: #ffffff;
+            background: #475569;
             width: 36px;
             height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .data-item-input-group {
@@ -294,7 +310,7 @@
 
         .data-item-input-label {
             font-size: 10px;
-            color: #94a3b8;
+            color: #cbd5e1;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.8px;
@@ -302,11 +318,11 @@
 
         .data-item input {
             padding: 8px 10px;
-            border: 1.5px solid #e2e8f0;
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
             border-radius: 7px;
             font-size: 13px;
-            background: #ffffff;
-            color: #0f172a;
+            background: #475569;
+            color: #f8fafc;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
             width: 100%;
@@ -316,8 +332,8 @@
         .data-item input:focus {
             outline: none;
             border-color: #667eea;
-            background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: #475569;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
         .data-item button {
@@ -448,7 +464,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #0f172a;
+            color: #f8fafc;
             font-size: 12px;
             letter-spacing: -0.2px;
         }
@@ -456,11 +472,11 @@
         .setting-input {
             width: 100%;
             padding: 10px 14px;
-            border: 1.5px solid #e2e8f0;
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             font-size: 13px;
-            background: #ffffff;
-            color: #0f172a;
+            background: #475569;
+            color: #f8fafc;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'SF Mono', 'Monaco', 'Menlo', 'Consolas', monospace;
             font-weight: 500;
@@ -469,7 +485,7 @@
         .setting-input:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
         .checkbox-group {
@@ -483,15 +499,15 @@
             align-items: center;
             gap: 10px;
             padding: 10px;
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s;
         }
 
         .checkbox-item:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .checkbox-item input[type="checkbox"] {
@@ -503,18 +519,18 @@
 
         .checkbox-item label {
             cursor: pointer;
-            color: #0f172a;
+            color: #f8fafc;
             font-size: 13px;
             user-select: none;
             font-weight: 500;
         }
 
         .chart-container {
-            background: #ffffff;
+            background: #334155;
             padding: 32px;
             border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         #chart {
@@ -527,10 +543,10 @@
             text-align: center;
             padding: 80px 40px;
             font-size: 15px;
-            color: #64748b;
-            background: #f8fafc;
+            color: #cbd5e1;
+            background: #334155;
             border-radius: 16px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             font-weight: 500;
         }
 
@@ -693,6 +709,7 @@
 </head>
 
 <body>
+    <canvas id="background-canvas"></canvas>
     <div class="container">
         <div class="header">
             <h1>Akima Spline</h1>
@@ -775,6 +792,187 @@
     </div>
 
     <script src="app.js" defer></script>
+    <script>
+        // Three.js背景アニメーション
+        (function () {
+            const canvas = document.getElementById('background-canvas');
+            if (!canvas || typeof THREE === 'undefined') return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                alpha: true,
+                antialias: false,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+            // パーティクルシステム（軽量化）
+            const particleCount = 600;
+            const particles = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 200;
+                positions[i + 1] = (Math.random() - 0.5) * 200;
+                positions[i + 2] = (Math.random() - 0.5) * 200;
+                velocities[i] = (Math.random() - 0.5) * 0.02;
+                velocities[i + 1] = (Math.random() - 0.5) * 0.02;
+                velocities[i + 2] = (Math.random() - 0.5) * 0.02;
+
+                // 色を紫系に設定
+                colors[i] = 0.4 + Math.random() * 0.3; // R
+                colors[i + 1] = 0.5 + Math.random() * 0.3; // G
+                colors[i + 2] = 0.9; // B
+            }
+
+            particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 1.0,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending,
+                vertexColors: true,
+                sizeAttenuation: false
+            });
+
+            const particleSystem = new THREE.Points(particles, particleMaterial);
+            scene.add(particleSystem);
+
+            // 線の接続用の配列（軽量化版）
+            const lineSegments = [];
+            const maxDistance = 40;
+            const maxDistanceSq = maxDistance * maxDistance;
+            let lineUpdateCounter = 0;
+            const maxConnectionsPerParticle = 8; // 各パーティクルの最大接続数
+
+            function updateLines() {
+                // 既存の線を削除
+                lineSegments.forEach(line => {
+                    line.geometry.dispose();
+                    line.material.dispose();
+                    scene.remove(line);
+                });
+                lineSegments.length = 0;
+
+                const pos = particles.attributes.position.array;
+
+                // 近接パーティクル間に線を描画（最適化版）
+                for (let i = 0; i < particleCount; i++) {
+                    const i3 = i * 3;
+                    let connectionCount = 0;
+
+                    // 各パーティクルに対して、近くのパーティクルだけをチェック
+                    for (let j = i + 1; j < particleCount && connectionCount < maxConnectionsPerParticle; j++) {
+                        const j3 = j * 3;
+                        const dx = pos[i3] - pos[j3];
+                        const dy = pos[i3 + 1] - pos[j3 + 1];
+                        const dz = pos[i3 + 2] - pos[j3 + 2];
+                        const distanceSq = dx * dx + dy * dy + dz * dz;
+
+                        if (distanceSq < maxDistanceSq) {
+                            const distance = Math.sqrt(distanceSq);
+                            const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+                                new THREE.Vector3(pos[i3], pos[i3 + 1], pos[i3 + 2]),
+                                new THREE.Vector3(pos[j3], pos[j3 + 1], pos[j3 + 2])
+                            ]);
+
+                            const opacity = (1 - distance / maxDistance) * 0.25;
+                            const lineMaterial = new THREE.LineBasicMaterial({
+                                color: 0x667eea,
+                                transparent: true,
+                                opacity: opacity
+                            });
+
+                            const line = new THREE.Line(lineGeometry, lineMaterial);
+                            scene.add(line);
+                            lineSegments.push(line);
+                            connectionCount++;
+                        }
+                    }
+                }
+            }
+
+            camera.position.z = 120;
+
+            let frame = 0;
+            let lastTime = performance.now();
+            const targetCameraRotation = { x: 0, y: 0 };
+            const currentCameraRotation = { x: 0, y: 0 };
+
+            function animate() {
+                requestAnimationFrame(animate);
+                frame++;
+
+                const currentTime = performance.now();
+                const deltaTime = Math.min((currentTime - lastTime) / 16.67, 2);
+                lastTime = currentTime;
+
+                const pos = particles.attributes.position.array;
+
+                // パーティクルの更新（軽量化版）
+                for (let i = 0; i < particleCount * 3; i += 3) {
+                    // 位置を更新
+                    pos[i] += velocities[i] * deltaTime;
+                    pos[i + 1] += velocities[i + 1] * deltaTime;
+                    pos[i + 2] += velocities[i + 2] * deltaTime;
+
+                    // 境界で反転（簡略化）
+                    if (Math.abs(pos[i]) > 100) {
+                        velocities[i] *= -0.9;
+                        pos[i] = Math.sign(pos[i]) * 100;
+                    }
+                    if (Math.abs(pos[i + 1]) > 100) {
+                        velocities[i + 1] *= -0.9;
+                        pos[i + 1] = Math.sign(pos[i + 1]) * 100;
+                    }
+                    if (Math.abs(pos[i + 2]) > 100) {
+                        velocities[i + 2] *= -0.9;
+                        pos[i + 2] = Math.sign(pos[i + 2]) * 100;
+                    }
+                }
+
+                particles.attributes.position.needsUpdate = true;
+
+                // 線の更新（頻度を下げて軽量化）
+                lineUpdateCounter++;
+                if (lineUpdateCounter >= 5) {
+                    updateLines();
+                    lineUpdateCounter = 0;
+                }
+
+                // カメラの滑らかな回転（簡略化）
+                targetCameraRotation.y += 0.0002;
+                targetCameraRotation.x = Math.sin(frame * 0.0008) * 0.08;
+
+                // 現在の回転を目標に向かって滑らかに補間
+                currentCameraRotation.y += (targetCameraRotation.y - currentCameraRotation.y) * 0.05;
+                currentCameraRotation.x += (targetCameraRotation.x - currentCameraRotation.x) * 0.05;
+
+                camera.rotation.y = currentCameraRotation.y;
+                camera.rotation.x = currentCameraRotation.x;
+
+                renderer.render(scene, camera);
+            }
+
+            // ウィンドウリサイズ対応
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // 初期化
+            updateLines();
+            animate();
+        })();
+    </script>
 </body>
 
 </html>
