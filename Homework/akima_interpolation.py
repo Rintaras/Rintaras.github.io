@@ -147,12 +147,18 @@ def akima_interpolate_4points(x_data: np.ndarray, y_data: np.ndarray, x_interp: 
     
     if x_interp <= x_sorted[0]:
         if len(x_sorted) > 1:
-            return y_sorted[0] + (y_sorted[1] - y_sorted[0]) / (x_sorted[1] - x_sorted[0]) * (x_interp - x_sorted[0])
+            dx = x_sorted[1] - x_sorted[0]
+            if dx == 0:
+                return y_sorted[0]
+            return y_sorted[0] + (y_sorted[1] - y_sorted[0]) / dx * (x_interp - x_sorted[0])
         else:
             return y_sorted[0]
     elif x_interp >= x_sorted[-1]:
         if len(x_sorted) > 1:
-            return y_sorted[-1] + (y_sorted[-1] - y_sorted[-2]) / (x_sorted[-1] - x_sorted[-2]) * (x_interp - x_sorted[-1])
+            dx = x_sorted[-1] - x_sorted[-2]
+            if dx == 0:
+                return y_sorted[-1]
+            return y_sorted[-1] + (y_sorted[-1] - y_sorted[-2]) / dx * (x_interp - x_sorted[-1])
         else:
             return y_sorted[-1]
     
@@ -209,12 +215,18 @@ def akima_interpolate_4points_with_cache(x_data: np.ndarray, y_data: np.ndarray,
     
     if x_interp <= x_sorted[0]:
         if len(x_sorted) > 1:
-            return y_sorted[0] + (y_sorted[1] - y_sorted[0]) / (x_sorted[1] - x_sorted[0]) * (x_interp - x_sorted[0])
+            dx = x_sorted[1] - x_sorted[0]
+            if dx == 0:
+                return y_sorted[0]
+            return y_sorted[0] + (y_sorted[1] - y_sorted[0]) / dx * (x_interp - x_sorted[0])
         else:
             return y_sorted[0]
     elif x_interp >= x_sorted[-1]:
         if len(x_sorted) > 1:
-            return y_sorted[-1] + (y_sorted[-1] - y_sorted[-2]) / (x_sorted[-1] - x_sorted[-2]) * (x_interp - x_sorted[-1])
+            dx = x_sorted[-1] - x_sorted[-2]
+            if dx == 0:
+                return y_sorted[-1]
+            return y_sorted[-1] + (y_sorted[-1] - y_sorted[-2]) / dx * (x_interp - x_sorted[-1])
         else:
             return y_sorted[-1]
     
@@ -258,12 +270,18 @@ def akima_interpolate_npoints(x_data: np.ndarray, y_data: np.ndarray, x_interp: 
     
     if x_interp <= x_sorted[0]:
         if len(x_sorted) > 1:
-            return y_sorted[0] + (y_sorted[1] - y_sorted[0]) / (x_sorted[1] - x_sorted[0]) * (x_interp - x_sorted[0])
+            dx = x_sorted[1] - x_sorted[0]
+            if dx == 0:
+                return y_sorted[0]
+            return y_sorted[0] + (y_sorted[1] - y_sorted[0]) / dx * (x_interp - x_sorted[0])
         else:
             return y_sorted[0]
     elif x_interp >= x_sorted[-1]:
         if len(x_sorted) > 1:
-            return y_sorted[-1] + (y_sorted[-1] - y_sorted[-2]) / (x_sorted[-1] - x_sorted[-2]) * (x_interp - x_sorted[-1])
+            dx = x_sorted[-1] - x_sorted[-2]
+            if dx == 0:
+                return y_sorted[-1]
+            return y_sorted[-1] + (y_sorted[-1] - y_sorted[-2]) / dx * (x_interp - x_sorted[-1])
         else:
             return y_sorted[-1]
     
