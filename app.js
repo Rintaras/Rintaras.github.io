@@ -39,6 +39,11 @@ async function initPyodide() {
         document.getElementById('loading').style.display = 'none';
         document.getElementById('main-content').style.display = 'block';
 
+        // Lucide iconsを初期化
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
         renderDataList();
         updateChart();
     } catch (error) {
@@ -187,6 +192,8 @@ if ${showCubic ? 'True' : 'False'}:
         const showGrid = document.getElementById('show-grid').checked;
 
         const traces = [];
+        const isLight = document.body.classList.contains('light-theme');
+        const themeColors = getThemeColors();
 
         if (showPoints) {
             traces.push({
@@ -196,8 +203,11 @@ if ${showCubic ? 'True' : 'False'}:
                 name: 'データポイント',
                 marker: {
                     size: 12,
-                    color: '#0f172a',
-                    line: { width: 2, color: '#fff' }
+                    color: isLight ? '#0f172a' : '#0f172a',
+                    line: {
+                        width: isLight ? 2.5 : 2,
+                        color: isLight ? '#ffffff' : '#fff'
+                    }
                 },
                 type: 'scatter'
             });
@@ -210,8 +220,8 @@ if ${showCubic ? 'True' : 'False'}:
                 mode: 'lines',
                 name: 'Akima スプライン (Akima Spline)',
                 line: {
-                    color: '#667eea',
-                    width: 3,
+                    color: isLight ? '#4f46e5' : '#667eea',
+                    width: isLight ? 3.5 : 3,
                     shape: 'spline',
                     smoothing: 1.3
                 },
@@ -226,8 +236,8 @@ if ${showCubic ? 'True' : 'False'}:
                 mode: 'lines',
                 name: '線形（Linear）',
                 line: {
-                    color: '#f59e0b',
-                    width: 2.5,
+                    color: isLight ? '#d97706' : '#f59e0b',
+                    width: isLight ? 3 : 2.5,
                     dash: 'dash'
                 },
                 type: 'scatter'
@@ -241,8 +251,8 @@ if ${showCubic ? 'True' : 'False'}:
                 mode: 'lines',
                 name: 'Cubic スプライン（Cubic Spline）',
                 line: {
-                    color: '#10b981',
-                    width: 2.5,
+                    color: isLight ? '#059669' : '#10b981',
+                    width: isLight ? 3 : 2.5,
                     dash: 'dot'
                 },
                 type: 'scatter'
@@ -270,17 +280,17 @@ if ${showCubic ? 'True' : 'False'}:
                     standoff: isMobile ? 12 : 24
                 },
                 showgrid: showGrid,
-                gridcolor: 'rgba(255, 255, 255, 0.1)',
+                gridcolor: themeColors.grid,
                 gridwidth: 1,
                 zeroline: false,
-                linecolor: '#f8fafc',
+                linecolor: themeColors.axisLine,
                 linewidth: isMobile ? 1.5 : 2,
                 tickfont: {
                     size: isSmallMobile ? 10 : isMobile ? 11 : 12,
-                    color: '#cbd5e1',
+                    color: themeColors.textMuted,
                     family: 'Inter, sans-serif'
                 },
-                titlefont: { color: '#e2e8f0' }
+                titlefont: { color: themeColors.titleFont }
             },
             yaxis: {
                 title: {
@@ -293,29 +303,29 @@ if ${showCubic ? 'True' : 'False'}:
                     standoff: isMobile ? 12 : 24
                 },
                 showgrid: showGrid,
-                gridcolor: 'rgba(255, 255, 255, 0.1)',
+                gridcolor: themeColors.grid,
                 gridwidth: 1,
                 zeroline: false,
-                linecolor: '#f8fafc',
+                linecolor: themeColors.axisLine,
                 linewidth: isMobile ? 1.5 : 2,
                 tickfont: {
                     size: isSmallMobile ? 10 : isMobile ? 11 : 12,
-                    color: '#cbd5e1',
+                    color: themeColors.textMuted,
                     family: 'Inter, sans-serif'
                 },
-                titlefont: { color: '#e2e8f0' }
+                titlefont: { color: themeColors.titleFont }
             },
             legend: {
                 font: {
                     size: isSmallMobile ? 11 : isMobile ? 12 : 13,
                     family: 'Inter, sans-serif',
                     weight: 500,
-                    color: '#f8fafc'
+                    color: themeColors.text
                 },
                 x: isMobile ? 0.01 : 0.02,
                 y: isMobile ? 0.99 : 0.98,
-                bgcolor: 'rgba(51, 65, 85, 0.95)',
-                bordercolor: 'rgba(255, 255, 255, 0.2)',
+                bgcolor: themeColors.legendBg,
+                bordercolor: themeColors.legendBorder,
                 borderwidth: 1,
                 borderradius: 8,
                 xanchor: 'left',
@@ -327,8 +337,8 @@ if ${showCubic ? 'True' : 'False'}:
                 : isMobile
                     ? { l: 60, r: 30, t: 40, b: 70 }
                     : { l: 90, r: 50, t: 50, b: 90 },
-            plot_bgcolor: '#334155',
-            paper_bgcolor: '#334155',
+            plot_bgcolor: isLight ? 'rgba(255, 255, 255, 1)' : themeColors.bg,
+            paper_bgcolor: isLight ? 'rgba(255, 255, 255, 1)' : themeColors.bg,
             autosize: true
         };
 
@@ -480,6 +490,50 @@ window.addEventListener('resize', () => {
         }
     }, 250);
 });
+
+// テーマカラー取得機能（グラフ用）
+function getThemeColors() {
+    const isLight = document.body.classList.contains('light-theme');
+    if (isLight) {
+        return {
+            bg: '#ffffff',
+            text: '#0f172a',
+            textSecondary: '#475569',
+            textMuted: '#64748b',
+            grid: 'rgba(15, 23, 42, 0.12)',
+            border: 'rgba(15, 23, 42, 0.25)',
+            legendBg: 'rgba(255, 255, 255, 0.98)',
+            legendBorder: 'rgba(15, 23, 42, 0.25)',
+            axisLine: '#0f172a',
+            titleFont: '#334155'
+        };
+    } else {
+        return {
+            bg: '#334155',
+            text: '#f8fafc',
+            textSecondary: '#cbd5e1',
+            textMuted: '#cbd5e1',
+            grid: 'rgba(255, 255, 255, 0.1)',
+            border: 'rgba(255, 255, 255, 0.2)',
+            legendBg: 'rgba(51, 65, 85, 0.95)',
+            legendBorder: 'rgba(255, 255, 255, 0.2)',
+            axisLine: '#f8fafc',
+            titleFont: '#e2e8f0'
+        };
+    }
+}
+
+// toggleTheme関数がHTMLで定義されている場合、それを上書きしてグラフ再描画も行う
+if (typeof window.toggleTheme === 'function') {
+    const originalToggleTheme = window.toggleTheme;
+    window.toggleTheme = function () {
+        originalToggleTheme();
+        // グラフを再描画
+        if (typeof pyodide !== 'undefined' && dataPoints && dataPoints.length >= 2) {
+            updateChart();
+        }
+    };
+}
 
 window.addEventListener('DOMContentLoaded', async () => {
     try {
