@@ -10,16 +10,14 @@ Akima補間アルゴリズムの実装とインタラクティブデモを提供
 
 ```
 .
-├── Homework/              # Python実装と可視化スクリプト
-│   ├── akima_interpolation.py  # Akima補間のコア実装
+├── Homework/                  # Python実装と可視化スクリプト（ローカル検証用）
+│   ├── akima_interpolation.py # Akima補間のコア実装
 │   └── visualize.py           # 補間手法の比較可視化
-├── public/                # インタラクティブWebデモ（GitHub Pagesで公開）
-│   ├── index.html        # メインHTMLファイル
-│   ├── app.js            # JavaScript制御コード
-│   ├── akima_interpolation.py  # ブラウザ用Python実装
-│   ├── visualize.py      # 可視化関数
-│   └── README.md         # Webデモの説明
-└── README.md             # このファイル
+├── index.html                 # インタラクティブWebデモ（GitHub Pagesで公開）
+├── app.js                     # WebデモのJavaScript制御コード
+├── akima_interpolation.py     # ブラウザ用Akima補間実装（Pyodideから読み込み）
+├── visualize.py               # ブラウザ用可視化関数
+└── README.md                  # このファイル
 ```
 
 ## 技術スタック
@@ -30,7 +28,7 @@ Akima補間アルゴリズムの実装とインタラクティブデモを提供
 - **Matplotlib**: 可視化
 - **SciPy**: 他の補間手法との比較用
 
-### public（Webデモ）
+### Webデモ（ブラウザ版）
 - **Pyodide**: ブラウザでPythonを実行
 - **Plotly.js**: インタラクティブなグラフ描画
 - **NumPy**: 数値計算（Pyodide経由）
@@ -46,7 +44,7 @@ Akima補間アルゴリズムの実装とインタラクティブデモを提供
 pip install numpy matplotlib scipy
 ```
 
-### public（Webデモ）のセットアップ
+### Webデモ（ブラウザ版）のセットアップ（ローカル確認用）
 
 WebデモはGitHub Pagesで公開されています。以下のURLからアクセスできます：
 
@@ -55,18 +53,16 @@ WebデモはGitHub Pagesで公開されています。以下のURLからアク�
 ローカルで確認する場合：
 
 ```bash
-cd public
 python -m http.server 8000
 ```
 
 または
 
 ```bash
-cd public
-npx serve
+npx serve .
 ```
 
-その後、ブラウザで `http://localhost:8000` にアクセスしてください。
+その後、ブラウザで `http://localhost:8000` にアクセスしてください（`index.html` が自動的に表示されます）。
 
 ## 使用方法
 
