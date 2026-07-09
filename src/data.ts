@@ -264,9 +264,9 @@ export const timelineEvents: TimelineEvent[] = [
     ]
   },
   {
-    year: '2026.June ~',
+    year: '2026.June',
     title: 'CyberAgent, Inc.',
-    description: 'CA Tech Jobにてサーバーサイドエンジニアとして就業中',
+    description: 'CA Tech JobにてサーバーサイドエンジニアとしてColorful Paletteの新規プロジェクトに参画し、新規機能開発や社内向けツールの開発に従事',
     image: 'https://img.neirong.plus/o/44/16/441606706a6511efb2bf7515a302c126.png',
     links: [
       {
@@ -278,7 +278,7 @@ export const timelineEvents: TimelineEvent[] = [
   {
     year: '2026.June ~',
     title: 'SCIEN, Inc.',
-    description: '東大 松尾研発AIスタートアップにて長期インターン',
+    description: '東大 松尾研発AIスタートアップにて長期インターン。受託開発のプロジェクトにて機械学習エンジニア、バックエンドエンジニアとして就業中。',
     image: 'https://pbs.twimg.com/profile_images/1894733318588858368/4XN-6jYz_400x400.jpg',
     links: [
       {
@@ -290,7 +290,7 @@ export const timelineEvents: TimelineEvent[] = [
   {
     year: '2026.July',
     title: '3-shake Inc.',
-    description: 'SREワークショップへ参加予定',
+    description: 'SREワークショップへ参加し、クラウドネイティブな技術を学ぶ',
     image: 'https://d2v9k5u4v94ulw.cloudfront.net/assets/images/5076589/original/a8f69e0b-b288-47a2-b3e2-59b059ef3c53?1590468986',
     links: [
       {
@@ -298,6 +298,22 @@ export const timelineEvents: TimelineEvent[] = [
         label: '公式サイト'
       }
     ],
+  },
+  {
+    year: '2026.July',
+    title: 'HackBase@Nihon University 2026.07 企業賞x2',
+    description: '日本大学の学部横断で行われたハッカソンにてバックエンド領域を担当し企業賞を2つ獲得',
+    image: 'https://www.ce.nihon-u.ac.jp/nue/wp-content/uploads/2025/09/news_thumbnail.jpg',
+    links: [
+      {
+        url: 'https://docs.google.com/presentation/d/1BJdT8LW60LNf4EntFiq3m35-9fJBVcrNQ0BpVA40JwU/edit?usp=sharing',
+        label: "発表スライド'z"
+      },
+      {
+        url: 'https://tech-boost-hackathon.my.canva.site/hackbase-nihon-university',
+        label: '公式ページ'
+      }
+    ]
   },
   {
     year: '2026.August',
