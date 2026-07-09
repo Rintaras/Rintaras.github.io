@@ -307,7 +307,7 @@ export const timelineEvents: TimelineEvent[] = [
     links: [
       {
         url: 'https://docs.google.com/presentation/d/1BJdT8LW60LNf4EntFiq3m35-9fJBVcrNQ0BpVA40JwU/edit?usp=sharing',
-        label: "発表スライド'z"
+        label: "発表スライド"
       },
       {
         url: 'https://tech-boost-hackathon.my.canva.site/hackbase-nihon-university',
