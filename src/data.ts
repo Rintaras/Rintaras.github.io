@@ -330,7 +330,7 @@ export const timelineEvents: TimelineEvent[] = [
   {
     year: '2026.August',
     title: 'Studist Corporation',
-    description: '当社サービス「Teachme Biz」を主とした4Daysインターンへ参加。画像・動画を用いたAI新機能開発を行いました。',
+    description: '同社サービス「Teachme Biz」を主とした4Daysインターンへ参加。画像・動画を用いたAI新機能開発を行いました。',
     image: 'https://assets.st-note.com/production/uploads/images/223775137/profile_57663ddd4bad4e272a8feb20afc36346.jpg?fit=bounds&format=jpeg&quality=85&width=330',
     links: [
       {
