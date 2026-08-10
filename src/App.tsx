@@ -246,11 +246,14 @@ function App() {
               <h2 className="text-3xl font-light mb-16 text-center text-white tracking-widest uppercase">
                 Timeline
               </h2>
-              <div className="space-y-12">
+              <div className="relative space-y-12">
+                <div
+                  className="absolute left-[3.5rem] top-0 bottom-0 w-px bg-white/20"
+                  aria-hidden
+                />
                 {timelineEvents.map((event, index) => (
                   <TimelineItem
                     key={index}
-                    index={index}
                     year={event.year}
                     title={event.title}
                     description={event.description}
