@@ -318,7 +318,7 @@ export const timelineEvents: TimelineEvent[] = [
   {
     year: '2026.August',
     title: 'MEDIA DO Co., Ltd.',
-    description: '電子書籍の配信・管理を支えるシステムのパフォーマンス改善に関するインターンへ参加予定',
+    description: '電子書籍の配信・管理を支えるシステムのインターンへ参加。システムのパフォーマンスチューニングに取り組みました。',
     image: 'https://mediado.jp/wp-content/themes/basic-theme/img/common/logo_ogp.png',
     links: [
       {
